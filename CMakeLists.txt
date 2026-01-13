@@ -13,8 +13,10 @@ file(GLOB_RECURSE WAVEFRONT_SOURCE CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/Pr
 add_executable(WavefrontPT ${WAVEFRONT_HEADERS} ${WAVEFRONT_SOURCE})
 
 target_include_directories(WavefrontPT PRIVATE 
-    ${WAVEFRONT_HEADERS}
+    ${CMAKE_SOURCE_DIR}/src/Public
 )
+
+target_precompile_headers(WavefrontPT PRIVATE ${CMAKE_SOURCE_DIR}/src/Public/Core.h)
 
 if (MSVC)
     target_compile_options(WavefrontPT PRIVATE

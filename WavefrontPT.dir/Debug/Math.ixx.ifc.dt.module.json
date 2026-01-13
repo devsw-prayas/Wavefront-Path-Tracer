@@ -1,0 +1,23 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "WavefrontPT.dir\\Debug\\Math.obj",
+            "outputs": [
+                "WavefrontPT.dir\\Debug\\Math.ixx.ifc.dt.module.json",
+                "WavefrontPT.dir\\Debug\\Math.ixx.ifc.dt.d.json",
+                "WavefrontPT.dir\\Debug\\Math.ifc",
+                "C:/StormWeaver/Development/Graphics Programming/Research/Wavefront Path Tracer/WavefrontPT.dir/Debug/cmake_pch.pch"
+            ],
+            "provides": [
+                {
+                    "logical-name": "Math",
+                    "source-path": "c:\\stormweaver\\development\\graphics programming\\research\\wavefront path tracer\\src\\private\\math.ixx",
+                    "is-interface": true
+                }
+            ],
+            "requires": []
+        }
+    ]
+}

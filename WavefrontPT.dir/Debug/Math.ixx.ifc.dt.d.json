@@ -1,0 +1,10 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\stormweaver\\development\\graphics programming\\research\\wavefront path tracer\\src\\private\\math.ixx",
+        "ProvidedModule": "Math",
+        "Includes": [],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}
