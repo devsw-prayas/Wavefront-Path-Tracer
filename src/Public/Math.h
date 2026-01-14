@@ -6,7 +6,7 @@ namespace WavefrontPT::Math {
 	using FP32 = float;
 	using FP64 = double;
 
-	struct alignas(32) Point3 final {
+	struct alignas(16) Point3 final {
 		FP32 X, Y, Z;
 
 		constexpr explicit Point3(FP32 v_Value) : X(v_Value), Y(v_Value), Z(v_Value) {}
@@ -22,7 +22,7 @@ namespace WavefrontPT::Math {
 		Point3& operator=(Point3&&) noexcept = default;
 	};
 
-	struct alignas(32) Vector3 final {
+	struct alignas(166) Vector3 final {
 		FP32 X, Y, Z;
 
 		constexpr explicit Vector3(FP32 v_Value) : X(v_Value), Y(v_Value), Z(v_Value) {}

@@ -1,6 +1,8 @@
 #pragma once
 #include <Core.h>
 
+#include "Math.h"
+
 namespace WavefrontPT::Math {
 #if !defined(EDITOR_MODE) && !defined(__AVX2__)
 #error "AVX2 flag must be enabled to use vectorized operations"
@@ -10,6 +12,14 @@ namespace WavefrontPT::Math {
 	using Reg8 = __m256;
 	using Reg4 = __m128;
 	using Float32 = float;
+
+	// Warning! Call this during thread creation or engine startup
+	// to prevent denormals from leaking into fp math
+	void enableFtzDaz();
+
+	Float32 sanitize(Float32 v_Value);
+	Reg4 sanitize(const Reg4& v_Value);
+	Reg8 sanitize(const Reg8& v_Value);
 
 	Float32 sqrt(Float32 v_Value);
 	Float32 rSqrt(Float32 v_Value);     // rsqrt + 1 NR
