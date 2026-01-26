@@ -22,7 +22,7 @@ namespace WavefrontPT::Math {
 		Point3& operator=(Point3&&) noexcept = default;
 	};
 
-	struct alignas(166) Vector3 final {
+	struct alignas(16) Vector3 final {
 		FP32 X, Y, Z;
 
 		constexpr explicit Vector3(FP32 v_Value) : X(v_Value), Y(v_Value), Z(v_Value) {}
@@ -37,6 +37,9 @@ namespace WavefrontPT::Math {
 		Vector3(Vector3&&) = default;
 		Vector3& operator=(Vector3&&) = default;
 	};
+
+	FP32 sinFP(FP32 v);
+	FP32 cosFP(FP32 v);
 
 	// Point Ops
 	constexpr Vector3 operator-(const Point3& ro_A, const Point3& ro_B) noexcept;
@@ -54,8 +57,13 @@ namespace WavefrontPT::Math {
 	constexpr Vector3 cross(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept;
 	constexpr FP32 lengthSq(const Vector3& ro_Op) noexcept;
 
-	FP32 normalize(const Vector3& ro_Vec) noexcept;
-	Vector3 reflect(const Vector3& ro_Vec) noexcept;
+	FP32 length(const Vector3& ro_Op) noexcept;
+
+	Vector3 normalize(const Vector3& ro_Vec) noexcept;
+	Vector3 reflect(const Vector3& ro_Vec, const Vector3& ro_Ref) noexcept;
+	Vector3 faceForward(const Vector3& ro_Vec, const Vector3& ro_N) noexcept;
+
+	Vector3 negate(const Vector3& ro_Vec) noexcept;
 
 	// Vector Ops
 
@@ -89,5 +97,13 @@ namespace WavefrontPT::Math {
 	Stripe3 scale(const Stripe3& ro_Stripe, RegFP32 v_Scalar);
 	RegFP32 dot(const Stripe3& ro_A, const Stripe3& ro_B); // Vectorized Dot
 	Stripe3 cross(const Stripe3& ro_A, const Stripe3& ro_B); // Vectorized Cross
+
+	RegFP32 length(const Stripe3& ro_Stripe);
+
+	Stripe3 normalize(const Stripe3& ro_Stripe);
+	Stripe3 reflect(const Stripe3& ro_Stripe, const Stripe3& ro_Ref);
+	Stripe3 faceForward(const Stripe3& ro_Stripe, const Stripe3& ro_N);
+
+	Stripe3 negate(const Stripe3& ro_Stripe);
 #endif
 }

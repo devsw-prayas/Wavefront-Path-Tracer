@@ -1,8 +1,6 @@
 #pragma once
 #include <Core.h>
 
-#include "Math.h"
-
 namespace WavefrontPT::Math {
 #if !defined(EDITOR_MODE) && !defined(__AVX2__)
 #error "AVX2 flag must be enabled to use vectorized operations"
@@ -17,8 +15,11 @@ namespace WavefrontPT::Math {
 	// to prevent denormals from leaking into fp math
 	void enableFtzDaz();
 
+	// sanitize: clears NaNs to zero; does not clamp infinities
 	Float32 sanitize(Float32 v_Value);
+	// sanitize: clears NaNs to zero; does not clamp infinities
 	Reg4 sanitize(const Reg4& v_Value);
+	// sanitize: clears NaNs to zero; does not clamp infinities
 	Reg8 sanitize(const Reg8& v_Value);
 
 	Float32 sqrt(Float32 v_Value);

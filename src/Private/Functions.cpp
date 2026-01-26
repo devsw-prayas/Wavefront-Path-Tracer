@@ -149,7 +149,7 @@ namespace WavefrontPT::Math {
 	Reg8 signBitMask(const Reg8& r_Val) {
 		const Reg8 signMask =
 			_mm256_castsi256_ps(_mm256_set1_epi32(0x80000000));
-		return _mm256_and_ps(r_Val, signMask);
+		return _mm256_and_ps(sanitize(r_Val), signMask);
 	}
 #endif
 }

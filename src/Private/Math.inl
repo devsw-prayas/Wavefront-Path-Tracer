@@ -27,7 +27,7 @@ namespace WavefrontPT::Math {
 	}
 
 	constexpr Vector3 operator/(const Vector3& ro_A, const Vector3& ro_B) noexcept {
-		return { ro_B.X / ro_A.X, ro_B.Y / ro_A.Y, ro_B.Z / ro_A.Z };
+		return { ro_A.X / ro_B.X, ro_A.Y / ro_B.Y, ro_A.Z / ro_B.Z };
 	}
 
 	constexpr FP32 dot(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept {
