@@ -1,5 +1,6 @@
 #include <Core.h>
-#include <Math.h>
+#include <WMath.h>
+#include <WMath.inl>
 #include <Functions.h>
 
 namespace WavefrontPT::Math {

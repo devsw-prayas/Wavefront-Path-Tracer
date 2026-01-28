@@ -2,6 +2,8 @@
 #include <Core.h>
 #include <Functions.h>
 
+#include "Transcendentals.h"
+
 namespace WavefrontPT::Math {
 	using FP32 = float;
 	using FP64 = double;
@@ -38,8 +40,13 @@ namespace WavefrontPT::Math {
 		Vector3& operator=(Vector3&&) = default;
 	};
 
-	FP32 sinFP(FP32 v);
-	FP32 cosFP(FP32 v);
+	inline FP32 sinFP(FP32 v) {
+		return Transcendentals::sin(v);
+	}
+
+	inline FP32 cosFP(FP32 v) {
+		return Transcendentals::cos(v);
+	}
 
 	// Point Ops
 	constexpr Vector3 operator-(const Point3& ro_A, const Point3& ro_B) noexcept;
@@ -55,7 +62,9 @@ namespace WavefrontPT::Math {
 	constexpr Vector3 scale(const Vector3& ro_Vec, FP32 v_Scalar) noexcept;
 	constexpr FP32 dot(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept;
 	constexpr Vector3 cross(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept;
-	constexpr FP32 lengthSq(const Vector3& ro_Op) noexcept;
+	inline FP32 lengthSq(const Vector3& ro_Op) noexcept {
+		return dot(ro_Op, ro_Op);
+	}
 
 	FP32 length(const Vector3& ro_Op) noexcept;
 

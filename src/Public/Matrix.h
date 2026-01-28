@@ -1,6 +1,6 @@
 #pragma once
 #include <Core.h>
-#include <Math.h>
+#include <WMath.h>
 
 namespace WavefrontPT::Math {
 
@@ -9,6 +9,7 @@ namespace WavefrontPT::Math {
 	//---------------------------------
 	template<size_t Rows, size_t Columns>
 	struct Matrix final {
+		Matrix() = default;
 		FP32 m_Memory[Rows * Columns];
 		~Matrix() = default;
 		Matrix(const Matrix&) = default;
