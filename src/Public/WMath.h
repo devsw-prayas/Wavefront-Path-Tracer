@@ -8,6 +8,18 @@ namespace WavefrontPT::Math {
 	using FP32 = float;
 	using FP64 = double;
 
+	constexpr FP32 kEpsilon = 1e-6f;
+	constexpr FP32 kEpsilonSq = 1e-12f;
+
+	inline bool isZero(FP32 v) {
+		return abs(v) < kEpsilon;
+	}
+
+	inline bool isOne(FP32 v) {
+		return abs(v - static_cast<FP32>(1)) < kEpsilon;
+	}
+
+
 	struct alignas(16) Point3 final {
 		FP32 X, Y, Z;
 
@@ -48,20 +60,47 @@ namespace WavefrontPT::Math {
 		return Transcendentals::cos(v);
 	}
 
-	// Point Ops
-	constexpr Vector3 operator-(const Point3& ro_A, const Point3& ro_B) noexcept;
-	constexpr Point3 operator+(const Point3& ro_A, const Vector3& ro_B) noexcept;
-	constexpr Point3 operator+(const Vector3& ro_A, const Point3& ro_B) noexcept;
+	inline constexpr Vector3 operator-(const Point3& ro_A, const Point3& ro_B) noexcept {
+		return { ro_A.X - ro_B.X, ro_A.Y - ro_B.Y, ro_A.Z - ro_B.Z };
+	}
 
-	// Mutators
-	constexpr Vector3 operator+(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept; // Elementwise Add
-	constexpr Vector3 operator-(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept; // Elementwise Subtract
-	constexpr Vector3 operator*(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept; // Elementwise Product (Hadamard)
-	constexpr Vector3 operator/(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept; // Elementwise Divide
+	inline constexpr Point3 operator+(const Point3& ro_A, const Vector3& ro_B) noexcept {
+		return { ro_A.X + ro_B.X, ro_A.Y + ro_B.Y, ro_A.Z + ro_B.Z };
+	}
 
-	constexpr Vector3 scale(const Vector3& ro_Vec, FP32 v_Scalar) noexcept;
-	constexpr FP32 dot(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept;
-	constexpr Vector3 cross(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept;
+	inline constexpr Point3 operator+(const Vector3& ro_A, const Point3& ro_B) noexcept {
+		return { ro_A.X + ro_B.X, ro_A.Y + ro_B.Y, ro_A.Z + ro_B.Z };
+	}
+
+	inline constexpr Vector3 operator+(const Vector3& ro_A, const Vector3& ro_B) noexcept {
+		return { ro_A.X + ro_B.X, ro_A.Y + ro_B.Y, ro_A.Z + ro_B.Z };
+	}
+
+	inline constexpr Vector3 operator-(const Vector3& ro_A, const Vector3& ro_B) noexcept {
+		return { ro_A.X - ro_B.X, ro_A.Y - ro_B.Y, ro_A.Z - ro_B.Z };
+	}
+
+	inline constexpr Vector3 operator*(const Vector3& ro_A, const Vector3& ro_B) noexcept {
+		return { ro_A.X * ro_B.X, ro_A.Y * ro_B.Y, ro_A.Z * ro_B.Z };
+	}
+
+	constexpr Vector3 operator/(const Vector3& ro_A, const Vector3& ro_B) noexcept {
+		return { ro_A.X / ro_B.X, ro_A.Y / ro_B.Y, ro_A.Z / ro_B.Z };
+	}
+
+	constexpr FP32 dot(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept {
+		return ro_OpA.X * ro_OpB.X + ro_OpA.Y * ro_OpB.Y + ro_OpA.Z * ro_OpB.Z;
+	}
+
+	inline constexpr Vector3 cross(const Vector3& ro_OpA, const Vector3& ro_OpB) noexcept {
+		return { ro_OpA.Y * ro_OpB.Z - ro_OpA.Z * ro_OpB.Y,
+			ro_OpA.Z * ro_OpB.X - ro_OpB.X * ro_OpA.Z,
+			ro_OpA.X * ro_OpB.Y - ro_OpB.X * ro_OpA.Y };
+	}
+
+	inline constexpr Vector3 scale(const Vector3& ro_Vec, FP32 v_Scalar) noexcept {
+		return { ro_Vec.X * v_Scalar, ro_Vec.Y * v_Scalar, ro_Vec.Z * v_Scalar };
+	}
 	inline FP32 lengthSq(const Vector3& ro_Op) noexcept {
 		return dot(ro_Op, ro_Op);
 	}

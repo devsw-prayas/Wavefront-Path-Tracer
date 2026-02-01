@@ -1,6 +1,5 @@
 #include <Core.h>
 #include <WMath.h>
-#include <WMath.inl>
 #include <Functions.h>
 
 namespace WavefrontPT::Math {
@@ -15,8 +14,9 @@ namespace WavefrontPT::Math {
 
 	Vector3 normalize(const Vector3& ro_Vec) noexcept {
 		FP32 l = lengthSq(ro_Vec);
-		if (l == 0.f) return scale(ro_Vec, rSqrt(l));
-		return Vector3{ 0 };
+		if (l <= kEpsilonSq) return { 0.0f, 0.0f, 0.0f };
+		FP32 invLen = 1.0f / std::sqrt(l);
+		return scale(ro_Vec, invLen);
 	}
 
 	Vector3 negate(const Vector3& ro_Vec) noexcept {
