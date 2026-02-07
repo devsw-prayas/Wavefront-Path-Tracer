@@ -15,7 +15,7 @@ inline void writePPM(
 
     for (int y = height - 1; y >= 0; --y) {
         for (int x = 0; x < width; ++x) {
-            const Vector3& c = framebuffer[y * width + x];
+            const WavefrontPT::Math::Vector3& c = framebuffer[y * width + x];
 
             int r = int(255.99f * c.X);
             int g = int(255.99f * c.Y);
