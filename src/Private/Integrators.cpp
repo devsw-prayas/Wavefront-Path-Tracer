@@ -11,9 +11,9 @@
 namespace WavefrontPT::Integrator {
 	using namespace WavefrontPT::Math;
 
-	static Vector3 traceRay(const Scene& ro_Scene, const Math::Ray& ro_Ray, int v_MaxBounce) {
+	static Vector3 traceRay(const Scene& ro_Scene, const Math::Ray& ro_Ray, int v_MaxBounce, int x, int y, int width) {
 		Payload payload(ro_Ray);
-
+		payload.m_RngState = (x + y * width) * 9781u + 1u;
 		for (int bounce = 0; bounce < v_MaxBounce; bounce++) {
 			Math::HitRecord hit = hitScene(ro_Scene, payload.m_CurrentRay);
 			if (!hit.m_Hit) {
@@ -21,7 +21,7 @@ namespace WavefrontPT::Integrator {
 				break;
 			}
 			const Materials::Material& mat = ro_Scene.m_Materials[hit.m_MatID];
-			evaluateMaterialResponse(payload, hit, mat);
+			evaluateMaterialResponse(ro_Scene, payload, hit, mat);
 			if (maxFast(payload.m_Throughput.X,
 						maxFast(payload.m_Throughput.Y, payload.m_Throughput.Z)) < kEpsilon)
 				break;
@@ -182,7 +182,7 @@ namespace WavefrontPT::Integrator {
 				// Trace
 				// -----------------------------------------
 				Vector3 radiance =
-					traceRay(scene, cameraRay, maxBounces);
+					traceRay(scene, cameraRay, maxBounces, x, y, kImageWidth);
 
 				// -----------------------------------------
 				// Store (linear, unclamped)
