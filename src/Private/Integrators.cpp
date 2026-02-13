@@ -5,19 +5,20 @@
 #include <WMath.h>
 
 #include "FileOutput.h"
+#include "IntegratorOps.h"
 #include "Payload.h"
 #include "Scene.h"
 
 namespace WavefrontPT::Integrator {
 	using namespace WavefrontPT::Math;
 
-	static Vector3 traceRay(const Scene& ro_Scene, const Math::Ray& ro_Ray, int v_MaxBounce, int x, int y, int width) {
+	static Vector3 traceRay(const Scene& ro_Scene, const Math::Ray& ro_Ray, int v_MaxBounce, int v_Seed) {
 		Payload payload(ro_Ray);
-		payload.m_RngState = (x + y * width) * 9781u + 1u;
+		payload.m_RngState = v_Seed;
 		for (int bounce = 0; bounce < v_MaxBounce; bounce++) {
 			Math::HitRecord hit = hitScene(ro_Scene, payload.m_CurrentRay);
 			if (!hit.m_Hit) {
-				payload.m_Radiance = payload.m_Radiance + payload.m_Throughput * Vector3(.4f, .4f, .4f);
+				payload.m_Radiance = payload.m_Radiance + payload.m_Throughput * Vector3(.1f, .1f, .1f);
 				break;
 			}
 			const Materials::Material& mat = ro_Scene.m_Materials[hit.m_MatID];
@@ -155,42 +156,53 @@ namespace WavefrontPT::Integrator {
 		);
 
 		const int maxBounces = 20;
-
+		const auto& time = std::chrono::steady_clock::now();
 		for (size_t y = 0; y < kImageHeight; ++y) {
 			for (size_t x = 0; x < kImageWidth; ++x) {
-				// -----------------------------------------
-				// Pixel -> normalized screen space
-				// -----------------------------------------
-				FP32 u = (FP32(x) + 0.5f) / FP32(kImageWidth);
-				FP32 v = (FP32(y) + 0.5f) / FP32(kImageHeight);
+				constexpr int kSamplesPerPixel = 256;
 
-				// -----------------------------------------
-				// Screen space -> image plane
-				// -----------------------------------------
-				Point3 pixelPoint =
-					lowerLeftCorner +
-					scale(horizontal, u) +
-					scale(vertical, v);
+				Vector3 accumulated(0.0f);
 
-				// -----------------------------------------
-				// Camera ray
-				// -----------------------------------------
-				Vector3 rayDir = normalize(pixelPoint - cameraOrigin);
-				Math::Ray cameraRay(cameraOrigin, rayDir);
+				for (int s = 0; s < kSamplesPerPixel; ++s) {
+					// -----------------------------------------
+					// Per-sample seed
+					// -----------------------------------------
+					uint32_t seed = (x + y * kImageWidth) * 9781u + s * 6271u + 1u;
+					uint32_t jitterSeed = seed;
 
-				// -----------------------------------------
-				// Trace
-				// -----------------------------------------
-				Vector3 radiance =
-					traceRay(scene, cameraRay, maxBounces, x, y, kImageWidth);
+					// -----------------------------------------
+					// Pixel -> normalized screen space (jittered)
+					// -----------------------------------------
+					FP32 u = (FP32(x) + Integrators::Ops::randomFloat(jitterSeed)) / FP32(kImageWidth);
+					FP32 v = (FP32(y) + Integrators::Ops::randomFloat(jitterSeed)) / FP32(kImageHeight);
 
+					// -----------------------------------------
+					// Screen space -> image plane
+					// -----------------------------------------
+					Point3 pixelPoint = lowerLeftCorner + scale(horizontal, u) + scale(vertical, v);
+
+					// -----------------------------------------
+					// Camera ray
+					// -----------------------------------------
+					Vector3 rayDir = normalize(pixelPoint - cameraOrigin);
+
+					Math::Ray cameraRay(cameraOrigin, rayDir);
+
+					// -----------------------------------------
+					// Trace
+					// -----------------------------------------
+					Vector3 radiance = traceRay(scene, cameraRay, maxBounces, seed);
+					accumulated = accumulated + radiance;
+				}
 				// -----------------------------------------
-				// Store (linear, unclamped)
+				// Store averaged result
 				// -----------------------------------------
-				framebuffer[y * kImageWidth + x] = radiance;
+				framebuffer[y * kImageWidth + x] = scale(accumulated, 1.0f / FP32(kSamplesPerPixel));
 			}
-			std::cout << "pixel " << y  << "\n";
+			std::cout << "pixel " << y << "\n";
 		}
+		const auto& end = std::chrono::steady_clock::now() - time;
+		std::cout << end << "\n";
 
 		writePPM("EmissivePathTracing.ppm", framebuffer, kImageWidth, kImageHeight);
 		delete[] framebuffer;
