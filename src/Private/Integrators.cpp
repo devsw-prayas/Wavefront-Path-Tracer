@@ -30,6 +30,44 @@ namespace WavefrontPT::Integrator {
 		return payload.m_Radiance;
 	}
 
+	static void renderRows(
+		const Scene& scene,
+		Vector3* framebuffer,
+		size_t yStart,
+		size_t yEnd,
+		size_t width,
+		size_t height,
+		int maxBounces,
+		const Point3& cameraOrigin,
+		const Point3& lowerLeftCorner,
+		const Vector3& horizontal,
+		const Vector3& vertical) {
+		constexpr int kSamplesPerPixel = 128;
+
+		for (size_t y = yStart; y < yEnd; ++y) {
+			for (size_t x = 0; x < width; ++x) {
+				Vector3 accumulated(0.0f);
+
+				for (int s = 0; s < kSamplesPerPixel; ++s) {
+					uint32_t seed = (x + y * width) * 9781u + s * 6271u + 1u;
+					uint32_t jitterSeed = seed;
+
+					FP32 u = (FP32(x) + Integrators::Ops::randomFloat(jitterSeed)) / FP32(width);
+					FP32 v = (FP32(y) + Integrators::Ops::randomFloat(jitterSeed)) / FP32(height);
+
+					Point3 pixelPoint = lowerLeftCorner + scale(horizontal, u) + scale(vertical, v);
+					Vector3 rayDir = normalize(pixelPoint - cameraOrigin);
+
+					Math::Ray cameraRay(cameraOrigin, rayDir);
+
+					Vector3 radiance = traceRay(scene, cameraRay, maxBounces, seed);
+					accumulated = accumulated + radiance;
+				}
+				framebuffer[y * width + x] = scale(accumulated, 1.0f / FP32(kSamplesPerPixel));
+			}
+		}
+	}
+
 	void basicShadingIntegrator() {
 		// -------------------------------------------------
 		// Image
@@ -64,8 +102,8 @@ namespace WavefrontPT::Integrator {
 		Math::MaterialID lightMat = registerMaterial(
 			scene,
 			Materials::Material(
-				Vector3(1.0f, 1.0f, 1.0f),   // color (irrelevant for emission)
-				Vector3(100.0f, 100.0f, 100.0f), // emission
+				Vector3(1.f, 1.f, 1.f),   // color (irrelevant for emission)
+				Vector3(18.0f, 15.f, 2.0f), // emission
 				0.0f,                        // metalness
 				0.0f                         // roughness
 			)
@@ -155,56 +193,55 @@ namespace WavefrontPT::Integrator {
 			)
 		);
 
-		const int maxBounces = 20;
 		const auto& time = std::chrono::steady_clock::now();
-		for (size_t y = 0; y < kImageHeight; ++y) {
-			for (size_t x = 0; x < kImageWidth; ++x) {
-				constexpr int kSamplesPerPixel = 256;
+		const int maxBounces = 8	;
 
-				Vector3 accumulated(0.0f);
+		const unsigned int threadCount =
+			std::thread::hardware_concurrency();
 
-				for (int s = 0; s < kSamplesPerPixel; ++s) {
-					// -----------------------------------------
-					// Per-sample seed
-					// -----------------------------------------
-					uint32_t seed = (x + y * kImageWidth) * 9781u + s * 6271u + 1u;
-					uint32_t jitterSeed = seed;
+		std::vector<std::thread> workers;
 
-					// -----------------------------------------
-					// Pixel -> normalized screen space (jittered)
-					// -----------------------------------------
-					FP32 u = (FP32(x) + Integrators::Ops::randomFloat(jitterSeed)) / FP32(kImageWidth);
-					FP32 v = (FP32(y) + Integrators::Ops::randomFloat(jitterSeed)) / FP32(kImageHeight);
+		size_t rowsPerThread =
+			kImageHeight / threadCount;
 
-					// -----------------------------------------
-					// Screen space -> image plane
-					// -----------------------------------------
-					Point3 pixelPoint = lowerLeftCorner + scale(horizontal, u) + scale(vertical, v);
+		auto startTime = std::chrono::steady_clock::now();
 
-					// -----------------------------------------
-					// Camera ray
-					// -----------------------------------------
-					Vector3 rayDir = normalize(pixelPoint - cameraOrigin);
+		for (unsigned int t = 0; t < threadCount; ++t) {
+			size_t yStart = t * rowsPerThread;
+			size_t yEnd =
+				(t == threadCount - 1)
+				? kImageHeight
+				: yStart + rowsPerThread;
 
-					Math::Ray cameraRay(cameraOrigin, rayDir);
-
-					// -----------------------------------------
-					// Trace
-					// -----------------------------------------
-					Vector3 radiance = traceRay(scene, cameraRay, maxBounces, seed);
-					accumulated = accumulated + radiance;
-				}
-				// -----------------------------------------
-				// Store averaged result
-				// -----------------------------------------
-				framebuffer[y * kImageWidth + x] = scale(accumulated, 1.0f / FP32(kSamplesPerPixel));
-			}
-			std::cout << "pixel " << y << "\n";
+			workers.emplace_back(
+				renderRows,
+				std::cref(scene),
+				framebuffer,
+				yStart,
+				yEnd,
+				kImageWidth,
+				kImageHeight,
+				maxBounces,
+				std::cref(cameraOrigin),
+				std::cref(lowerLeftCorner),
+				std::cref(horizontal),
+				std::cref(vertical)
+			);
 		}
+
+		for (auto& w : workers)
+			w.join();
+
+		auto endTime = std::chrono::steady_clock::now();
+		std::cout << "Time: "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(
+				endTime - startTime).count()
+			<< " ms\n";
+
 		const auto& end = std::chrono::steady_clock::now() - time;
 		std::cout << end << "\n";
 
-		writePPM("EmissivePathTracing.ppm", framebuffer, kImageWidth, kImageHeight);
+		writePPM("MultithreadedPT.ppm", framebuffer, kImageWidth, kImageHeight);
 		delete[] framebuffer;
 	}
 }
