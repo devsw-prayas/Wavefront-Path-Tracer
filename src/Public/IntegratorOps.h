@@ -1,7 +1,7 @@
 #pragma once
 #include "WMath.h"
 
-namespace WavefrontPT::Integrators::Ops {		 
+namespace WavefrontPT::Integrators::Ops {
 	using namespace Math;
 	Math::Vector3 sampleUnfiromUnitSphere(Math::FP32 v_U1, Math::FP32 v_U2);
 
@@ -11,6 +11,5 @@ namespace WavefrontPT::Integrators::Ops {
 		uint32_t r = xorShift32(state);
 		return FP32(r) * (1.0f / 4294967296.0f);
 	}
-
-
+	Vector3 sampleCosineHemisphere(FP32 u1, FP32 u2);
 }

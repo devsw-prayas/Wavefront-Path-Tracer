@@ -67,15 +67,21 @@ namespace WavefrontPT::Integrator {
 				ro_Payload.m_Radiance = ro_Payload.m_Radiance + ro_Payload.m_Throughput * Ld;
 			}
 		}
-
-		Math::Vector3 wo = Math::negate(ro_Payload.m_CurrentRay.m_DirectionCosine);
 		Math::Vector3 n = ro_Hit.m_GeometricNormal;
-		Math::Vector3 wSpec = wo - Math::scale(n, 2.0f * dot(wo, n));
-		Math::Vector3 wDiff = n;
-		Math::Vector3 wBase = scale(wDiff, 1.0f - ro_Mat.m_Metalness) + scale(wSpec, ro_Mat.m_Metalness);
-		Math::Vector3 wi2 = Math::normalize(scale(wBase, 1.0f - ro_Mat.m_Roughness) + Math::scale(n, ro_Mat.m_Roughness));
+		Math::Vector3 tangent = Math::absFast(n.X) > 0.1f ? Math::Vector3(0, 1, 0) : Math::Vector3(1, 0, 0);
+		tangent = Math::normalize(Math::cross(tangent, n));
+		Math::Vector3 bitangent = cross(n, tangent);
+
+		u1 = Integrators::Ops::randomFloat(ro_Payload.m_RngState);
+		u2 = Integrators::Ops::randomFloat(ro_Payload.m_RngState);
+
+		Math::Vector3 localDir = Integrators::Ops::sampleCosineHemisphere(u1, u2);
+		wi = Math::scale(tangent, localDir.X) + Math::scale(bitangent, localDir.Y) + Math::scale(n,localDir.Z);
+
+		wi = normalize(wi);
 		ro_Payload.m_Throughput = ro_Payload.m_Throughput * ro_Mat.m_Color;
-		ro_Payload.m_CurrentRay.m_Origin = ro_Hit.m_HitPoint + Math::scale(n, Math::kEpsilon);
-		ro_Payload.m_CurrentRay.m_DirectionCosine = wi2;
+
+		ro_Payload.m_CurrentRay.m_Origin =ro_Hit.m_HitPoint +Math::scale(n, Math::kEpsilon);
+		ro_Payload.m_CurrentRay.m_DirectionCosine =wi;
 	}
 }

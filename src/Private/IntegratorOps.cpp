@@ -19,4 +19,18 @@ namespace WavefrontPT::Integrators::Ops {
 		v_State ^= v_State << 5;
 		return v_State;
 	}
+
+	Math::Vector3 sampleCosineHemisphere(
+		Math::FP32 u1,
+		Math::FP32 u2) {
+		Math::FP32 r = std::sqrt(u1);
+		Math::FP32 theta = 2.0f * std::numbers::pi_v<float> * u2;
+
+		Math::FP32 x = r * std::cos(theta);
+		Math::FP32 y = r * std::sin(theta);
+		Math::FP32 z = std::sqrt(1.0f - u1);
+
+		return Math::Vector3(x, y, z); // local space
+	}
+
 }
