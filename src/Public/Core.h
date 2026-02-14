@@ -23,6 +23,10 @@
 //
 // ----------------------------------------------------------------------------------
 
+#define WF_FORCEINLINE __forceinline
+#define WF_UNREACHABLE() __assume(0)
+#define WF_FALLTHROUGH [[fallthrough]]
+
 
 // ----------------------------------------------------------------------------------
 // Standard Library Headers (for PCH)
